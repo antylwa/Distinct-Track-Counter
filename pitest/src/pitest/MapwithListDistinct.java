@@ -8,15 +8,23 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.io.FileWriter;
+
 
 public class MapwithListDistinct {
+	
+
+//CSV file header
+private static final String FILE_HEADER = "DISTINCT_PLAY_COUNT,CLIENT_COUNT";
+
 public static void main(String[] args) throws IOException {
 		
 //Data load from csv into map
+	String path = new File("SourceFiles/exhibitA-input.csv").getAbsolutePath();
 		HashMap<String, List<String>> hash_map = new HashMap<String, List<String>>();
 		
 		String line;
-		String path = new File("SourceFiles/exhibitA-input.csv").getAbsolutePath();
+		
 		BufferedReader br = new BufferedReader(new FileReader(path));
 		while ((line = br.readLine()) != null) {
 		    String[] cols = line.split("	");
@@ -45,10 +53,10 @@ public static void playedTrackList(HashMap<String, List<String>> map, String key
     }
 }
 
-//Calculate Record Count with Corresponding Client Count
+// Calculate Record Count with Corresponding Client Count
 public static void trackCount(HashMap<String, List<String>> trackmap) {
 	
-	//Holds initial data
+	// Holds initial data
 	HashMap<String, Integer> count_map = new HashMap<String, Integer>();
 	
 	for (String key:trackmap.keySet()) 
@@ -58,7 +66,7 @@ public static void trackCount(HashMap<String, List<String>> trackmap) {
 		
 	}
 
-//Holds Record Count corresponding to the Client count
+	// Holds Record Count corresponding to the Client count
 	HashMap<Integer, String> result_map = new HashMap<Integer, String>();
 	for (String tkey:count_map.keySet())
 	{
@@ -69,20 +77,21 @@ public static void trackCount(HashMap<String, List<String>> trackmap) {
 		}
 	}
 	
-//Display the Client count with the corresponding played track count
-	for (Integer tkey:result_map.keySet())
-	{
-		System.out.println("DISTINCT_PLAY_COUNT  = " + tkey + " CLIENT_COUNT  = " + result_map.get(tkey));
+	try {
+		csvWriter(result_map);
+	} catch (IOException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
 	}
+
 }
 
-//Calculate the distinct tracks in the list belongs to CLIENT_ID
+// Calculate the distinct tracks in the list belongs to CLIENT_ID
 public static Integer countStreamGroup(List<String> inputList) {
 	List<String> duplicateList = new ArrayList<>();
 	Integer distinctRecord = 0;
 	for (String item:inputList)
 	{
-//Count duplicated records as 1 (One)
 		if(!duplicateList.contains(item))
 		{
 			duplicateList.add(item);
@@ -91,5 +100,24 @@ public static Integer countStreamGroup(List<String> inputList) {
 	}
 	return distinctRecord;
 }
-}
 
+
+public static void csvWriter(HashMap<Integer, String> writemap) throws IOException {
+	FileWriter writer;
+	String path = new File("SourceFiles/DistincTrack.csv").getAbsolutePath();
+	writer = new FileWriter(path, true);
+
+	// Write CSV
+	// Add Header
+	writer.append(FILE_HEADER.toString());
+	writer.write("\r\n");
+	// Add Records
+	for (Integer tkey:writemap.keySet()) { 
+		writer.write(tkey.toString());
+		writer.write(",");
+		writer.write(writemap.get(tkey));
+		writer.write("\r\n");
+	}
+	writer.close();
+}
+}
